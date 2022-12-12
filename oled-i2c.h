@@ -64,7 +64,7 @@
 #define Scroll_256Frames		0x03
 
 
-class OzOLED {
+class OLEDI2C {
 
 public:
 
@@ -103,7 +103,7 @@ public:
 
 };
 
-extern OzOLED OzOled;  // OzOLED object 
+extern OLEDI2C OzOled;  // OzOLED object 
 
 #endif
 

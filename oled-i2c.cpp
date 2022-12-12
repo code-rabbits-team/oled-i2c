@@ -215,7 +215,7 @@ const byte bigNumbers [][96] PROGMEM = {
 
 // ====================== LOW LEVEL =========================
 
-void OzOLED::sendCommand(byte command){
+void OLEDI2C::sendCommand(byte command){
 	Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
 	Wire.write(OzOLED_COMMAND_MODE);//data mode
 	Wire.write(command);
@@ -223,7 +223,7 @@ void OzOLED::sendCommand(byte command){
 }
 
 
-void OzOLED::sendData(byte data){
+void OLEDI2C::sendData(byte data){
 	
 	Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
 	Wire.write(OzOLED_DATA_MODE);//data mode
@@ -232,7 +232,7 @@ void OzOLED::sendData(byte data){
 
 }
 
-void OzOLED::printChar(char C, byte X, byte Y){
+void OLEDI2C::printChar(char C, byte X, byte Y){
 
 	if ( X < 128 )
 		setCursorXY(X, Y);
@@ -250,7 +250,7 @@ void OzOLED::printChar(char C, byte X, byte Y){
     }
 }
 
-void OzOLED::printString(const char *String, byte X, byte Y, byte numChar){
+void OLEDI2C::printString(const char *String, byte X, byte Y, byte numChar){
 
 	if ( X < 128 )
 		setCursorXY(X, Y);
@@ -264,7 +264,7 @@ void OzOLED::printString(const char *String, byte X, byte Y, byte numChar){
 }
 
 
-byte OzOLED::printNumber(long long_num, byte X, byte Y){
+byte OLEDI2C::printNumber(long long_num, byte X, byte Y){
 
 	if ( X < 128 )
 		setCursorXY(X, Y);
@@ -310,7 +310,7 @@ byte OzOLED::printNumber(long long_num, byte X, byte Y){
 
 
 
-byte OzOLED::printNumber(float float_num, byte prec, byte X, byte Y){
+byte OLEDI2C::printNumber(float float_num, byte prec, byte X, byte Y){
 
 	if ( X < 128 )
 		setCursorXY(X, Y);
@@ -371,7 +371,7 @@ byte OzOLED::printNumber(float float_num, byte prec, byte X, byte Y){
 
 
 
-void OzOLED::printBigNumber(const char *number, byte X, byte Y, byte numChar){
+void OLEDI2C::printBigNumber(const char *number, byte X, byte Y, byte numChar){
 // big number pixels: 24 x 32
 
  // Y - page
@@ -414,7 +414,7 @@ void OzOLED::printBigNumber(const char *number, byte X, byte Y, byte numChar){
 }
 
 
-void OzOLED::drawBitmap(const byte *bitmaparray, byte X, byte Y, byte width, byte height){
+void OLEDI2C::drawBitmap(const byte *bitmaparray, byte X, byte Y, byte width, byte height){
 
 // max width = 16
 // max height = 8
@@ -439,7 +439,7 @@ void OzOLED::drawBitmap(const byte *bitmaparray, byte X, byte Y, byte width, byt
 // =================== High Level ===========================
 
 
-void OzOLED::init(){
+void OLEDI2C::init(){
 	Wire.begin();
 	
 	// upgrade to 400KHz! (only use when your other i2c device support this speed)
@@ -464,7 +464,7 @@ void OzOLED::init(){
 
 }
 
-void OzOLED::setCursorXY(byte X, byte Y){
+void OLEDI2C::setCursorXY(byte X, byte Y){
 	// Y - 1 unit = 1 page (8 pixel rows)
 	// X - 1 unit = 8 pixel columns
 
@@ -475,7 +475,7 @@ void OzOLED::setCursorXY(byte X, byte Y){
 }
 
 
-void OzOLED::clearDisplay()	{
+void OLEDI2C::clearDisplay()	{
 
 
 	for(byte page=0; page<8; page++) {	
@@ -504,44 +504,44 @@ void OzOLED::clearPage(byte page)	{
 */
 
 
-void OzOLED::setInverseDisplay(){
+void OLEDI2C::setInverseDisplay(){
 
 	sendCommand(OzOLED_CMD_INVERSE_DISPLAY);
 	
 }
 
-void OzOLED::setNormalDisplay(){
+void OLEDI2C::setNormalDisplay(){
 
 	sendCommand(OzOLED_CMD_NORMAL_DISPLAY);
 	
 }
 
-void OzOLED::setPowerOff(){
+void OLEDI2C::setPowerOff(){
 
 	sendCommand(OzOLED_CMD_DISPLAY_OFF);
 	
 }
 
-void OzOLED::setPowerOn(){
+void OLEDI2C::setPowerOn(){
 
 	sendCommand(OzOLED_CMD_DISPLAY_ON);
 	
 }
 
-void OzOLED::setBrightness(byte Brightness){
+void OLEDI2C::setBrightness(byte Brightness){
 
 	sendCommand(OzOLED_CMD_SET_BRIGHTNESS);
 	sendCommand(Brightness);
    
 }
 
-void OzOLED::setPageMode(){
+void OLEDI2C::setPageMode(){
 	addressingMode = PAGE_ADDRESSING;
 	sendCommand(0x20); 				//set addressing mode
 	sendCommand(PAGE_ADDRESSING); 	//set page addressing mode
 }
 
-void OzOLED::setHorizontalMode(){
+void OLEDI2C::setHorizontalMode(){
 	addressingMode = HORIZONTAL_ADDRESSING;
 	sendCommand(0x20); 				//set addressing mode
 	sendCommand(HORIZONTAL_ADDRESSING); 	//set page addressing mode
@@ -552,7 +552,7 @@ void OzOLED::setHorizontalMode(){
 // Activate a right handed scroll for rows start through stop
 // Hint, the display is 16 rows tall. To scroll the whole display, run:
 // scrollRight(0x00, 0x0F)  - start - stop
-void OzOLED::scrollRight(byte start, byte end, byte speed){
+void OLEDI2C::scrollRight(byte start, byte end, byte speed){
 
     sendCommand(OzOLED_RIGHT_SCROLL);  //Horizontal Scroll Setup
     sendCommand(0x00);	// dummy byte 
@@ -572,7 +572,7 @@ void OzOLED::scrollRight(byte start, byte end, byte speed){
 // Activate a right handed scroll for rows start through stop
 // Hint, the display is 16 rows tall. To scroll the whole display, run:
 // display.scrollright(0x00, 0x0F)   - start - stop
-void OzOLED::scrollLeft(byte start, byte end, byte speed){
+void OLEDI2C::scrollLeft(byte start, byte end, byte speed){
 
     sendCommand(OzOLED_LEFT_SCROLL);  //Horizontal Scroll Setup
     sendCommand(0x00);	// dummy byte
@@ -591,7 +591,7 @@ void OzOLED::scrollLeft(byte start, byte end, byte speed){
 // Activate a diagonal scroll for rows start through stop
 // Hint, the display is 16 rows tall. To scroll the whole display, run:
 // display.scrollright(0x00, 0x0F) 
-void OzOLED::scrollDiagRight(){
+void OLEDI2C::scrollDiagRight(){
 
         sendCommand(OzOLED_SET_VERTICAL_SCROLL_AREA);        
         sendCommand(0X00);
@@ -606,7 +606,7 @@ void OzOLED::scrollDiagRight(){
 	
 }
 
-void OzOLED::scrollDiagLeft(){
+void OLEDI2C::scrollDiagLeft(){
 
         sendCommand(OzOLED_SET_VERTICAL_SCROLL_AREA);        
         sendCommand(0X00);
@@ -622,7 +622,7 @@ void OzOLED::scrollDiagLeft(){
 }
 
 
-void OzOLED::setActivateScroll(byte direction, byte startPage, byte endPage, byte scrollSpeed){
+void OLEDI2C::setActivateScroll(byte direction, byte startPage, byte endPage, byte scrollSpeed){
 
 
 /*
@@ -691,7 +691,7 @@ Use the following defines for 'scrollSpeed' :
 
 }
 
-void OzOLED::setDeactivateScroll(){
+void OLEDI2C::setDeactivateScroll(){
 
 	sendCommand(OzOLED_CMD_DEACTIVATE_SCROLL);
 
@@ -700,5 +700,5 @@ void OzOLED::setDeactivateScroll(){
 
 
 
-OzOLED OzOled;  // Preinstantiate Objects
+OLEDI2C OzOled;  // Preinstantiate Objects
 
