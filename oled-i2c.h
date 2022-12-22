@@ -15,11 +15,11 @@
   Lesser General Public License for more details.
 
 */
-
-#ifndef OzOLED_data_H
-#define OzOLED_data_H
+#ifndef OLED_I2C_H_
+#define OLED_I2C_H_
 
 #include <Arduino.h>
+#include <Wire.h>
 
 #define OzOLED_Max_X 128 // 128 Pixels
 #define OzOLED_Max_Y 64	 // 64  Pixels
@@ -63,17 +63,39 @@
 #define Scroll_128Frames 0x02
 #define Scroll_256Frames 0x03
 
+/// @brief Control OLED through I2C.
 class OLEDI2C
 {
 
+private:
+	TwoWire _wire;
+	uint8_t _width;
+	uint8_t _height;
+
 public:
+	/// @brief Initializes a new instance of the OLEDI2C class with default communication and size.
+	OLEDI2C();
+
+	/// @brief Initializes a new instance of the OLEDI2C class with default communication and specified size
+	/// @param width The width of the oled.
+	/// @param height The width of the height.
+	OLEDI2C(uint8_t width, uint8_t height);
+
+	/// @brief Initializes a new instance of the OLEDI2C class with specified communication and size
+	/// @param wire The wire is the TwoWire instance used to communicate with the oled device..
+	/// @param width The width of the oled.
+	/// @param height The width of the height.
+	OLEDI2C(TwoWire wire, uint8_t width, uint8_t height);
+
 	byte addressingMode;
 
 	void sendCommand(byte command);
 	void sendData(byte Data);
 
-	void printChar(char c, byte X = 255, byte Y = 255);
-	void printString(const char *String, byte X = 255, byte Y = 255, byte numChar = 255);
+	size_t print(char ch);
+	size_t print(char ch, uint8_t x, uint8_t y);
+	size_t print(const char *str);
+	size_t print(const char *str, uint8_t x, uint8_t y);
 	byte printNumber(long n, byte X = 255, byte Y = 255);
 	byte printNumber(float float_num, byte prec = 6, byte Y = 255, byte numChar = 255);
 	void printBigNumber(const char *number, byte column = 0, byte page = 0, byte numChar = 255);
@@ -100,7 +122,5 @@ public:
 	void setActivateScroll(byte direction, byte startPage, byte endPage, byte scrollSpeed);
 	void setDeactivateScroll();
 };
-
-extern OLEDI2C OzOled; // OzOLED object
 
 #endif
