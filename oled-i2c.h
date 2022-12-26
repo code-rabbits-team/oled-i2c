@@ -73,8 +73,10 @@ private:
 	TwoWire _wire;
 	uint8_t _width;
 	uint8_t _height;
+	uint8_t _cursorX;
+	uint8_t _cursorY;
 
-	void print(byte** font);
+	void print(byte **font);
 
 public:
 	/// @brief Initializes a new instance of the OLEDI2C class with default communication and size.
@@ -108,7 +110,7 @@ public:
 
 	void init();
 
-	void setCursorXY(byte Column, byte Row);
+	void setCursorXY(byte x, byte y);
 	void clearDisplay();
 	// void clearPage(byte page);
 

@@ -21,7 +21,7 @@
 #include <avr/pgmspace.h>
 #include "src/libs/PredefineFont.h"
 
-const byte mask[8] PROGMEM = {0x00, 0x08, 0x2A, 0x1C, 0x2A, 0x08, 0x00, 0x00};
+const byte mask[32] PROGMEM = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0x00, 0x60, 0x01, 0xfc, 0x00, 0x70, 0x00, 0xf0, 0x00, 0xd8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 OLEDI2C::OLEDI2C(FontTable *fontTable) : OLEDI2C(fontTable, 128, 64) {}
 
@@ -50,13 +50,22 @@ void OLEDI2C::sendData(byte data)
 
 void OLEDI2C::print(byte **font)
 {
-	for (byte i = 0; i < 8; i++)
+	for (size_t i = 0; i < 4; i++)
 	{
-		byte b = pgm_read_byte(&((*font)[i]));		
-		// read bytes from code memory
-		// sendData(pgm_read_byte(&asciiFont[ch - 32][i])); // font array starts at 0, ASCII starts at 32. Hence the translation
-		sendData(b); // font array starts at 0, ASCII starts at 32. Hence the translation
+		for (size_t j = 0; j < 8; j++)
+		{
+			size_t p = i * 8 + j;
+			byte b = pgm_read_byte(&((*font)[i * 8 + j]));
+			sendData(b);
+		}
+
+		if (i == 1)
+		{
+			setCursorXY(_cursorX, _cursorY + 1);
+		}
 	}
+
+	setCursorXY(_cursorX + 2, _cursorY - 1);
 }
 
 size_t OLEDI2C::print(const char *str)
@@ -71,7 +80,6 @@ size_t OLEDI2C::print(const char *str, size_t length)
 	{
 		byte *font = NULL;
 		cursor += _fontTable->GetFont(str + cursor, &font);
-		Serial.println();
 		if (font == NULL)
 		{
 			font = (byte *)&mask;
@@ -165,14 +173,16 @@ void OLEDI2C::init()
 	setCursorXY(0, 0);
 }
 
-void OLEDI2C::setCursorXY(byte X, byte Y)
+void OLEDI2C::setCursorXY(byte x, byte y)
 {
 	// Y - 1 unit = 1 page (8 pixel rows)
 	// X - 1 unit = 8 pixel columns
 
-	sendCommand(0x01 + (8 * X & 0x0F));		   // set column lower address
-	sendCommand(0x10 + ((8 * X >> 4) & 0x0F)); // set column higher address
-	sendCommand(0xB0 + Y);					   // set page address
+	sendCommand(0x01 + (8 * x & 0x0F));		   // set column lower address
+	sendCommand(0x10 + ((8 * x >> 4) & 0x0F)); // set column higher address
+	sendCommand(0xB0 + y);					   // set page address	
+	_cursorX = x;
+	_cursorY = y;
 }
 
 void OLEDI2C::clearDisplay()

@@ -1,26 +1,5 @@
 #include "FontTable.h"
 
-void DebugPrint(SlimList<FontIndex_t *> *plist)
-{
-    Serial.println("[DebugPrint]");
-
-    for (size_t i = 0; i < plist->getCount(); i++)
-    {
-        const FontIndex_t *pFontIndex = (*plist)[i];
-        Serial.print("pFontIndex: ");
-        Serial.print((int16_t)pFontIndex);
-        Serial.print(", offset: ");
-        Serial.print(pFontIndex->offset);
-        Serial.print(",  length: ");
-        Serial.print(pFontIndex->length);
-        Serial.print(", count: ");
-        Serial.print(plist->getCount());
-        Serial.print(", i: ");
-        Serial.print(i);
-        Serial.println();
-    }
-}
-
 uint32_t FontTable::Utf8Parser(const char *ch, size_t length)
 {
     uint32_t font = 0;
@@ -116,7 +95,7 @@ size_t FontTable::GetFont(const char *ch, const byte **font)
     size_t targetIndex = f - fontIndex->offset;
     if (0 <= targetIndex && targetIndex < fontIndex->length)
     {
-        pFont = (uint8_t *)(fontIndex->font + (targetIndex * 4));
+        pFont = (uint8_t *)(fontIndex->font + (targetIndex * 16));
     }
 
     for (byte i = 0; i < 8; i++)
