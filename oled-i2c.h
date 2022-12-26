@@ -20,6 +20,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include "FontTable.h"
 
 #define OzOLED_Max_X 128 // 128 Pixels
 #define OzOLED_Max_Y 64	 // 64  Pixels
@@ -68,34 +69,38 @@ class OLEDI2C
 {
 
 private:
+	FontTable *_fontTable;
 	TwoWire _wire;
 	uint8_t _width;
 	uint8_t _height;
 
+	void print(byte** font);
+
 public:
 	/// @brief Initializes a new instance of the OLEDI2C class with default communication and size.
-	OLEDI2C();
+	/// @param fontTable The table with fonts to display on the oled.
+	OLEDI2C(FontTable *fontTable);
 
 	/// @brief Initializes a new instance of the OLEDI2C class with default communication and specified size
-	/// @param width The width of the oled.
+	/// @param fontTable The table with fonts to display on the oled.
 	/// @param height The width of the height.
-	OLEDI2C(uint8_t width, uint8_t height);
+	/// @param width The width of the oled.
+	OLEDI2C(FontTable *fontTable, uint8_t width, uint8_t height);
 
 	/// @brief Initializes a new instance of the OLEDI2C class with specified communication and size
 	/// @param wire The wire is the TwoWire instance used to communicate with the oled device..
-	/// @param width The width of the oled.
+	/// @param fontTable The table with fonts to display on the oled.
 	/// @param height The width of the height.
-	OLEDI2C(TwoWire wire, uint8_t width, uint8_t height);
+	/// @param width The width of the oled.
+	OLEDI2C(TwoWire wire, FontTable *fontTable, uint8_t width, uint8_t height);
 
 	byte addressingMode;
 
 	void sendCommand(byte command);
 	void sendData(byte Data);
 
-	size_t print(char ch);
-	size_t print(char ch, uint8_t x, uint8_t y);
 	size_t print(const char *str);
-	size_t print(const char *str, uint8_t x, uint8_t y);
+	size_t print(const char *str, size_t length);
 	byte printNumber(long n, byte X = 255, byte Y = 255);
 	byte printNumber(float float_num, byte prec = 6, byte Y = 255, byte numChar = 255);
 	void printBigNumber(const char *number, byte column = 0, byte page = 0, byte numChar = 255);

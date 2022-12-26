@@ -19,15 +19,17 @@
 #include "oled-i2c.h"
 #include <Wire.h>
 #include <avr/pgmspace.h>
-#include "font.h"
+#include "src/libs/PredefineFont.h"
 
-OLEDI2C::OLEDI2C() : OLEDI2C(128, 64) {}
+const byte mask[8] PROGMEM = {0x00, 0x08, 0x2A, 0x1C, 0x2A, 0x08, 0x00, 0x00};
 
-OLEDI2C::OLEDI2C(uint8_t width, uint8_t height)
-	: OLEDI2C(Wire, width, height) {}
+OLEDI2C::OLEDI2C(FontTable *fontTable) : OLEDI2C(fontTable, 128, 64) {}
 
-OLEDI2C::OLEDI2C(TwoWire wire, uint8_t width, uint8_t height)
-	: _wire(wire), _width(width), _height(height) {}
+OLEDI2C::OLEDI2C(FontTable *fontTable, uint8_t width, uint8_t height)
+	: OLEDI2C(Wire, fontTable, width, height) {}
+
+OLEDI2C::OLEDI2C(TwoWire wire, FontTable *fontTable, uint8_t width, uint8_t height)
+	: _wire(wire), _fontTable(fontTable), _width(width), _height(height) {}
 
 void OLEDI2C::sendCommand(byte command)
 {
@@ -46,152 +48,38 @@ void OLEDI2C::sendData(byte data)
 	_wire.endTransmission();
 }
 
-size_t OLEDI2C::print(char ch)
+void OLEDI2C::print(byte **font)
 {
-	// Ignore unused ASCII characters. Modified the range to support multilingual characters.
-	if (ch < 32 || ch > 127)
-	{
-		ch = '*'; // star - indicate characters that can't be displayed
-	}
-
 	for (byte i = 0; i < 8; i++)
 	{
+		byte b = pgm_read_byte(&((*font)[i]));		
 		// read bytes from code memory
-		sendData(pgm_read_byte(&asciiFont[ch - 32][i])); // font array starts at 0, ASCII starts at 32. Hence the translation
+		// sendData(pgm_read_byte(&asciiFont[ch - 32][i])); // font array starts at 0, ASCII starts at 32. Hence the translation
+		sendData(b); // font array starts at 0, ASCII starts at 32. Hence the translation
 	}
-}
-
-size_t OLEDI2C::print(char ch, uint8_t x, uint8_t y)
-{
-	if (x >= _width || y >= _height)
-	{
-		return;
-	}
-
-	setCursorXY(x, y);
-	print(ch);
 }
 
 size_t OLEDI2C::print(const char *str)
 {
-	int i = -1;
-	int count = 0;
-	char ch;
-	while ((ch = str[++i]) != '\0')
-	{
-		count += print(ch);
-	}
-
-	return i;
+	return print(str, strlen(str));
 }
 
-size_t OLEDI2C::print(const char *str, uint8_t x, uint8_t y)
+size_t OLEDI2C::print(const char *str, size_t length)
 {
-	if (x >= _width || y >= _height)
+	size_t cursor = 0;
+	while (cursor < length)
 	{
-		return;
-	}
-
-	setCursorXY(x, y);
-	return print(str);
-}
-
-byte OLEDI2C::printNumber(long long_num, byte X, byte Y)
-{
-	if (X < _width)
-	{
-		setCursorXY(X, Y);
-	}
-
-	byte char_buffer[10] = "";
-	byte i = 0;
-	byte f = 0; // number of characters
-
-	if (long_num < 0)
-	{
-		f++;
-		print('-');
-		long_num = -long_num;
-	}
-	else if (long_num == 0)
-	{
-		f++;
-		print('0');
-		return f;
-	}
-
-	while (long_num > 0)
-	{
-
-		char_buffer[i++] = long_num % 10;
-		long_num /= 10;
-	}
-
-	f += i;
-	for (; i > 0; i--)
-	{
-		print('0' + char_buffer[i - 1]);
-	}
-
-	return f;
-}
-
-byte OLEDI2C::printNumber(float float_num, byte prec, byte X, byte Y)
-{
-	if (X < _width)
-	{
-		setCursorXY(X, Y);
-	}
-
-	// prec - 6 maximum
-
-	byte num_int = 0;
-	byte num_frac = 0;
-	byte num_extra = 0;
-
-	long d = float_num;		 // get the integer part
-	float f = float_num - d; // get the fractional part
-
-	if (d == 0 && f < 0.0)
-	{
-		print('-');
-		num_extra++;
-		print('0');
-		num_extra++;
-		f *= -1;
-	}
-	else if (d < 0 && f < 0.0)
-	{
-		num_int = printNumber(d); // count how many digits in integer part
-		f *= -1;
-	}
-	else
-	{
-		num_int = printNumber(d); // count how many digits in integer part
-	}
-
-	// only when fractional part > 0, we show decimal point
-	if (f > 0.0)
-	{
-		print('.');
-		num_extra++;
-
-		long f_shift = 1;
-
-		if (num_int + prec > 8)
+		byte *font = NULL;
+		cursor += _fontTable->GetFont(str + cursor, &font);
+		Serial.println();
+		if (font == NULL)
 		{
-			prec = 8 - num_int;
+			font = (byte *)&mask;
 		}
-
-		for (byte j = 0; j < prec; j++)
-		{
-			f_shift *= 10;
-		}
-
-		num_frac = printNumber((long)(f * f_shift)); // count how many digits in fractional part
+		print(&font);
 	}
 
-	return num_int + num_frac + num_extra;
+	return cursor;
 }
 
 void OLEDI2C::printBigNumber(const char *number, byte X, byte Y, byte numChar)
