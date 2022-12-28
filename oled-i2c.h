@@ -20,7 +20,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "FontTable.h"
+#include "src/libs/FontTable.h"
 
 #define OzOLED_Max_X 128 // 128 Pixels
 #define OzOLED_Max_Y 64	 // 64  Pixels
